@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Spotify Streamer</string>
+    <string name="title_artist_detail">Artist Detail</string>
+</resources>
