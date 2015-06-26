@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Spotify Streamer</string>
     <string name="title_top_tracks">Top 10 Tracks</string>
+    <string name="search_hint">Enter artist name...</string>
 </resources>
