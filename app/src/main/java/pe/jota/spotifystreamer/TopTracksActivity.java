@@ -14,9 +14,9 @@ import android.view.MenuItem;
  * in a {@link ArtistListActivity}.
  * <p/>
  * This activity is mostly just a 'shell' activity containing nothing
- * more than a {@link ArtistDetailFragment}.
+ * more than a {@link TopTracksFragment}.
  */
-public class ArtistDetailActivity extends AppCompatActivity {
+public class TopTracksActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +39,9 @@ public class ArtistDetailActivity extends AppCompatActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(ArtistDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(ArtistDetailFragment.ARG_ITEM_ID));
-            ArtistDetailFragment fragment = new ArtistDetailFragment();
+            arguments.putString(TopTracksFragment.ARG_ITEM_ID,
+                    getIntent().getStringExtra(TopTracksFragment.ARG_ITEM_ID));
+            TopTracksFragment fragment = new TopTracksFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.artist_detail_container, fragment)

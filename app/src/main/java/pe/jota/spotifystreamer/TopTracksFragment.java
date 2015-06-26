@@ -13,10 +13,10 @@ import pe.jota.spotifystreamer.dummy.DummyContent;
 /**
  * A fragment representing a single Artist detail screen.
  * This fragment is either contained in a {@link ArtistListActivity}
- * in two-pane mode (on tablets) or a {@link ArtistDetailActivity}
+ * in two-pane mode (on tablets) or a {@link TopTracksActivity}
  * on handsets.
  */
-public class ArtistDetailFragment extends Fragment {
+public class TopTracksFragment extends Fragment {
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -32,7 +32,7 @@ public class ArtistDetailFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ArtistDetailFragment() {
+    public TopTracksFragment() {
     }
 
     @Override

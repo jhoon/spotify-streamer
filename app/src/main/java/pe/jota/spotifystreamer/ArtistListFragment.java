@@ -3,23 +3,29 @@ package pe.jota.spotifystreamer;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
 import pe.jota.spotifystreamer.dummy.DummyContent;
 
 /**
  * A list fragment representing a list of Songs. This fragment
  * also supports tablet devices by allowing list items to be given an
  * 'activated' state upon selection. This helps indicate which item is
- * currently being viewed in a {@link ArtistDetailFragment}.
+ * currently being viewed in a {@link TopTracksFragment}.
  * <p/>
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
 public class ArtistListFragment extends ListFragment {
+
+    private static final String LOG_TAG = ArtistListFragment.class.getSimpleName();
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -70,6 +76,8 @@ public class ArtistListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        new FetchArtistTask(getActivity()).execute();
 
         // TODO: replace with a real list adapter.
         setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(
