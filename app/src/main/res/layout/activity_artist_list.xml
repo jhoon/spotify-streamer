@@ -1,18 +1,5 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:baselineAligned="false"
-    android:orientation="vertical"
-    tools:context=".ArtistListActivity">
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/txtSearch"
-        android:hint="@string/search_hint"/>
-
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<fragment
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/artist_list"
     android:name="pe.jota.spotifystreamer.ArtistListFragment"
@@ -21,5 +8,4 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     tools:context=".ArtistListActivity"
-    tools:layout="@android:layout/list_content" />
-</LinearLayout>
+    tools:layout="@layout/fragment_artist_list" />

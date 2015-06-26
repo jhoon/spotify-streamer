@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -26,13 +27,25 @@ public class ArtistsAdapter extends ArrayAdapter<Artist>{
     public View getView(int position, View convertView, ViewGroup parent) {
         Artist artist = getItem(position);
 
+        ViewHolder viewHolder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, parent, false);
+            viewHolder = new ViewHolder();
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+            convertView = inflater.inflate(R.layout.list_item_artist, parent, false);
+            viewHolder.artistImage = (ImageView)convertView.findViewById(R.id.imgImage);
+            viewHolder.artistName = (TextView)convertView.findViewById(R.id.tvMainTitle);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder)convertView.getTag();
         }
 
-        TextView tvTitle = (TextView)convertView.findViewById(R.id.tvMainTitle);
-        tvTitle.setText(artist.name);
+        viewHolder.artistName.setText(artist.name);
 
         return convertView;
+    }
+
+    private static class ViewHolder {
+        ImageView artistImage;
+        TextView artistName;
     }
 }

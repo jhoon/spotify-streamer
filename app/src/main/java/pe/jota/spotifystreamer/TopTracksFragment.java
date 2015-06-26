@@ -5,7 +5,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 /**
  * A fragment representing a single Artist detail screen.
@@ -47,7 +46,7 @@ public class TopTracksFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_artist_detail, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
         // Show the dummy content as text in a TextView.
 //        if (mItem != null) {
