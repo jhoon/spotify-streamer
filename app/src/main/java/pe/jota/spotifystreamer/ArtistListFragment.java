@@ -1,18 +1,20 @@
 package pe.jota.spotifystreamer;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
-import pe.jota.spotifystreamer.dummy.DummyContent;
+import pe.jota.spotifystreamer.adapters.ArtistsAdapter;
 
 /**
  * A list fragment representing a list of Songs. This fragment
@@ -77,14 +79,15 @@ public class ArtistListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        new FetchArtistTask(getActivity()).execute();
+        FetchArtistsTask fetchTask = new FetchArtistsTask();
+        fetchTask.execute();
 
         // TODO: replace with a real list adapter.
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(
+        /*setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(
                 getActivity(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
-                DummyContent.ITEMS));
+                DummyContent.ITEMS));*/
     }
 
     @Override
@@ -124,7 +127,8 @@ public class ArtistListFragment extends ListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        // TODO: change this
+        mCallbacks.onItemSelected("1");
     }
 
     @Override
@@ -156,5 +160,27 @@ public class ArtistListFragment extends ListFragment {
         }
 
         mActivatedPosition = position;
+    }
+
+    private class FetchArtistsTask extends AsyncTask<String, Void, ArtistsPager> {
+        private final String LOG_TAG = FetchArtistsTask.class.getSimpleName();
+
+        @Override
+        protected ArtistsPager doInBackground(String... params) {
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
+            ArtistsPager result = spotify.searchArtists("Holland");
+
+            Log.d(LOG_TAG, result.toString());
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(ArtistsPager artistsPager) {
+            super.onPostExecute(artistsPager);
+            ArrayList<Artist> artists = new ArrayList<Artist>(artistsPager.artists.items);
+            setListAdapter(new ArtistsAdapter(getActivity(), artists));
+        }
     }
 }

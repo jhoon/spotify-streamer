@@ -21,7 +21,7 @@
         </activity>
         <activity
             android:name=".TopTracksActivity"
-            android:label="@string/title_artist_detail"
+            android:label="@string/title_top_tracks"
             android:parentActivityName=".ArtistListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
