@@ -10,42 +10,45 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.Track;
 import pe.jota.spotifystreamer.R;
 
 /**
  * Created by jhoon on 6/26/15.
  */
-public class ArtistsAdapter extends ArrayAdapter<Artist>{
-    private final static String LOG_TAG = ArtistsAdapter.class.getSimpleName();
+public class TopTracksAdapter extends ArrayAdapter<Track> {
+    private static final String LOG_TAG = TopTracksAdapter.class.getSimpleName();
 
-    public ArtistsAdapter(Context context, ArrayList<Artist> artists) {
-        super(context, 0, artists);
+    public TopTracksAdapter(Context context, ArrayList<Track> tracks) {
+        super(context, 0, tracks);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Artist artist = getItem(position);
+        Track track = getItem(position);
 
         ViewHolder viewHolder;
         if (convertView == null) {
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(R.layout.list_item_generic, parent, false);
-            viewHolder.artistImage = (ImageView)convertView.findViewById(R.id.imgImage);
-            viewHolder.artistName = (TextView)convertView.findViewById(R.id.tvMainTitle);
+            viewHolder.albumImage = (ImageView)convertView.findViewById(R.id.imgImage);
+            viewHolder.trackName = (TextView)convertView.findViewById(R.id.tvMainTitle);
+            viewHolder.albumName = (TextView)convertView.findViewById(R.id.tvSubTitle);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder)convertView.getTag();
         }
 
-        viewHolder.artistName.setText(artist.name);
+        viewHolder.trackName.setText(track.name);
+        viewHolder.albumName.setText(track.album.name);
 
-        return convertView;
+        return super.getView(position, convertView, parent);
     }
 
     private static class ViewHolder {
-        ImageView artistImage;
-        TextView artistName;
+        ImageView albumImage;
+        TextView trackName;
+        TextView albumName;
     }
 }

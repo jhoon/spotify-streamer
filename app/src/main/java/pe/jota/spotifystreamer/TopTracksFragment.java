@@ -1,5 +1,6 @@
 package pe.jota.spotifystreamer;
 
+import android.app.ListFragment;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,7 +13,7 @@ import android.view.ViewGroup;
  * in two-pane mode (on tablets) or a {@link TopTracksActivity}
  * on handsets.
  */
-public class TopTracksFragment extends Fragment {
+public class TopTracksFragment extends ListFragment {
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
