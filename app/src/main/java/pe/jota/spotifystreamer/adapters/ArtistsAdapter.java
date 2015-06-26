@@ -30,7 +30,7 @@ public class ArtistsAdapter extends ArrayAdapter<Artist>{
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, parent, false);
         }
 
-        TextView tvTitle = (TextView)convertView.findViewById(R.id.txtMainTitle);
+        TextView tvTitle = (TextView)convertView.findViewById(R.id.tvMainTitle);
         tvTitle.setText(artist.name);
 
         return convertView;
