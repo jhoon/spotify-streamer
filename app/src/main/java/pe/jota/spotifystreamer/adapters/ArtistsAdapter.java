@@ -42,9 +42,6 @@ public class ArtistsAdapter extends ArrayAdapter<Artist>{
             viewHolder = (ViewHolder)convertView.getTag();
         }
 
-        if (viewHolder.artistImage.getTag() != null) {
-
-        }
         if (artist.images.size() > 0){
             String url = artist.images.get(0).url;
             Log.d(LOG_TAG, url);

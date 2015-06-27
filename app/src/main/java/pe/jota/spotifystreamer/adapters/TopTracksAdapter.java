@@ -1,12 +1,15 @@
 package pe.jota.spotifystreamer.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -43,6 +46,17 @@ public class TopTracksAdapter extends ArrayAdapter<Track> {
 
         viewHolder.trackName.setText(track.name);
         viewHolder.albumName.setText(track.album.name);
+
+        if (track.album.images.size() > 0) {
+            String url = track.album.images.get(0).url;
+            Log.d(LOG_TAG, url);
+            Picasso.with(getContext())
+                    .load(url)
+                    .placeholder(R.mipmap.ic_launcher)
+                    .resizeDimen(R.dimen.image_width, R.dimen.image_height)
+                    .centerCrop()
+                    .into(viewHolder.albumImage);
+        }
 
         return convertView;
     }
