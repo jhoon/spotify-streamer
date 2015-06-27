@@ -3,6 +3,7 @@ package pe.jota.spotifystreamer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,10 +73,8 @@ public class TopTracksFragment extends ListFragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
-        // Show the dummy content as text in a TextView.
-//        if (mItem != null) {
-//            ((TextView) rootView.findViewById(R.id.artist_detail)).setText(mItem.content);
-//        }
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setSubtitle(mArtistName);
+
         new FetchTopTracksTask().execute(mArtistId);
 
         return rootView;
