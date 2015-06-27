@@ -1,25 +1,41 @@
 package pe.jota.spotifystreamer;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.ArrayList;
 
-import pe.jota.spotifystreamer.dummy.DummyContent;
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
+import pe.jota.spotifystreamer.adapters.ArtistsAdapter;
 
 /**
  * A list fragment representing a list of Songs. This fragment
  * also supports tablet devices by allowing list items to be given an
  * 'activated' state upon selection. This helps indicate which item is
- * currently being viewed in a {@link ArtistDetailFragment}.
+ * currently being viewed in a {@link TopTracksFragment}.
  * <p/>
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
 public class ArtistListFragment extends ListFragment {
+
+    private static final String LOG_TAG = ArtistListFragment.class.getSimpleName();
+    private EditText mTxtSearch;
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -31,12 +47,14 @@ public class ArtistListFragment extends ListFragment {
      * The fragment's current callback object, which is notified of list item
      * clicks.
      */
-    private Callbacks mCallbacks = sDummyCallbacks;
+    private Callbacks mCallbacks = activityCallbacks;
 
     /**
      * The current activated item position. Only used on tablets.
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
+
+    private ArtistsAdapter mArtistsAdapter;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -47,16 +65,16 @@ public class ArtistListFragment extends ListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(String id);
+        public void onItemSelected(Artist artist);
     }
 
     /**
      * A dummy implementation of the {@link Callbacks} interface that does
      * nothing. Used only when this fragment is not attached to an activity.
      */
-    private static Callbacks sDummyCallbacks = new Callbacks() {
+    private static Callbacks activityCallbacks = new Callbacks() {
         @Override
-        public void onItemSelected(String id) {
+        public void onItemSelected(Artist artist) {
         }
     };
 
@@ -70,13 +88,34 @@ public class ArtistListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
-        // TODO: replace with a real list adapter.
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(
-                getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                DummyContent.ITEMS));
+    private void searchArtist(String searchText) {
+        if (!searchText.trim().equals("")) {
+            FetchArtistsTask fetchTask = new FetchArtistsTask();
+            fetchTask.execute(searchText);
+        } else {
+            Toast.makeText(getActivity(), R.string.enter_artist_name, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_artist_list, container, false);
+
+        mTxtSearch = (EditText)rootView.findViewById(R.id.txtSearch);
+        mTxtSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    searchArtist(v.getText().toString());
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        return rootView;
     }
 
     @Override
@@ -107,7 +146,7 @@ public class ArtistListFragment extends ListFragment {
         super.onDetach();
 
         // Reset the active callbacks interface to the dummy implementation.
-        mCallbacks = sDummyCallbacks;
+        mCallbacks = activityCallbacks;
     }
 
     @Override
@@ -116,7 +155,10 @@ public class ArtistListFragment extends ListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        // TODO: change this
+        Artist selectedArtist = (Artist)getListAdapter().getItem(position);
+        Log.d(LOG_TAG, "selected: " + selectedArtist.name);
+        mCallbacks.onItemSelected(selectedArtist);
     }
 
     @Override
@@ -148,5 +190,37 @@ public class ArtistListFragment extends ListFragment {
         }
 
         mActivatedPosition = position;
+    }
+
+    private class FetchArtistsTask extends AsyncTask<String, Void, ArtistsPager> {
+        private final String LOG_TAG = FetchArtistsTask.class.getSimpleName();
+
+        @Override
+        protected ArtistsPager doInBackground(String... params) {
+            String searchText = params[0];
+
+            Log.d(LOG_TAG, "searchTerm" + searchText);
+
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
+            ArtistsPager result = spotify.searchArtists(searchText);
+
+            Log.d(LOG_TAG, result.toString());
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(ArtistsPager artistsPager) {
+            super.onPostExecute(artistsPager);
+            ArrayList<Artist> artists = new ArrayList<Artist>(artistsPager.artists.items);
+            mArtistsAdapter = new ArtistsAdapter(getActivity(), artists);
+
+            setListAdapter(mArtistsAdapter);
+
+            if (artistsPager.artists.total == 0) {
+                Toast.makeText(getActivity(), R.string.no_artists_found, Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

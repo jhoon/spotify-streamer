@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pe.jota.spotifystreamer" >
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -17,8 +20,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ArtistDetailActivity"
-            android:label="@string/title_artist_detail"
+            android:name=".TopTracksActivity"
+            android:label="@string/title_top_tracks"
             android:parentActivityName=".ArtistListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
