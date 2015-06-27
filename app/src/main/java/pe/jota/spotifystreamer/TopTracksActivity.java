@@ -39,8 +39,10 @@ public class TopTracksActivity extends AppCompatActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(TopTracksFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(TopTracksFragment.ARG_ITEM_ID));
+            arguments.putString(TopTracksFragment.ARG_ARTIST_ID,
+                    getIntent().getStringExtra(TopTracksFragment.ARG_ARTIST_ID));
+            arguments.putString(TopTracksFragment.ARG_ARTIST_NAME,
+                    getIntent().getStringExtra(TopTracksFragment.ARG_ARTIST_NAME));
             TopTracksFragment fragment = new TopTracksFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()

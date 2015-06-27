@@ -44,7 +44,7 @@ public class TopTracksAdapter extends ArrayAdapter<Track> {
         viewHolder.trackName.setText(track.name);
         viewHolder.albumName.setText(track.album.name);
 
-        return super.getView(position, convertView, parent);
+        return convertView;
     }
 
     private static class ViewHolder {

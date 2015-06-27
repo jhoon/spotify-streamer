@@ -47,12 +47,14 @@ public class ArtistListFragment extends ListFragment {
      * The fragment's current callback object, which is notified of list item
      * clicks.
      */
-    private Callbacks mCallbacks = sDummyCallbacks;
+    private Callbacks mCallbacks = activityCallbacks;
 
     /**
      * The current activated item position. Only used on tablets.
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
+
+    private ArtistsAdapter mArtistsAdapter;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -63,16 +65,16 @@ public class ArtistListFragment extends ListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(String id);
+        public void onItemSelected(Artist artist);
     }
 
     /**
      * A dummy implementation of the {@link Callbacks} interface that does
      * nothing. Used only when this fragment is not attached to an activity.
      */
-    private static Callbacks sDummyCallbacks = new Callbacks() {
+    private static Callbacks activityCallbacks = new Callbacks() {
         @Override
-        public void onItemSelected(String id) {
+        public void onItemSelected(Artist artist) {
         }
     };
 
@@ -144,7 +146,7 @@ public class ArtistListFragment extends ListFragment {
         super.onDetach();
 
         // Reset the active callbacks interface to the dummy implementation.
-        mCallbacks = sDummyCallbacks;
+        mCallbacks = activityCallbacks;
     }
 
     @Override
@@ -154,7 +156,9 @@ public class ArtistListFragment extends ListFragment {
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
         // TODO: change this
-        mCallbacks.onItemSelected("1");
+        Artist selectedArtist = (Artist)getListAdapter().getItem(position);
+        Log.d(LOG_TAG, "selected: " + selectedArtist.name);
+        mCallbacks.onItemSelected(selectedArtist);
     }
 
     @Override
@@ -210,7 +214,9 @@ public class ArtistListFragment extends ListFragment {
         protected void onPostExecute(ArtistsPager artistsPager) {
             super.onPostExecute(artistsPager);
             ArrayList<Artist> artists = new ArrayList<Artist>(artistsPager.artists.items);
-            setListAdapter(new ArtistsAdapter(getActivity(), artists));
+            mArtistsAdapter = new ArtistsAdapter(getActivity(), artists);
+
+            setListAdapter(mArtistsAdapter);
 
             if (artistsPager.artists.total == 0) {
                 Toast.makeText(getActivity(), R.string.no_artists_found, Toast.LENGTH_SHORT).show();
