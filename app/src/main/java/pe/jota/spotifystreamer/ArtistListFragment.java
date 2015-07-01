@@ -22,6 +22,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import pe.jota.spotifystreamer.adapters.ArtistsAdapter;
+import retrofit.RetrofitError;
 
 /**
  * A list fragment representing a list of Songs. This fragment
@@ -68,7 +69,7 @@ public class ArtistListFragment extends ListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(Artist artist);
+        void onItemSelected(Artist artist);
     }
 
     /**
@@ -222,9 +223,15 @@ public class ArtistListFragment extends ListFragment {
 
             SpotifyApi api = new SpotifyApi();
             SpotifyService spotify = api.getService();
-            ArtistsPager result = spotify.searchArtists(searchText);
+            ArtistsPager result;
+            try {
+                result = spotify.searchArtists(searchText);
+            } catch (RetrofitError e){
+                Log.e(LOG_TAG, e.getMessage(), e);
+                result = null;
+            }
 
-            Log.d(LOG_TAG, result.toString());
+            Log.d(LOG_TAG, result != null ? result.toString() : "No results retrieved");
 
             return result;
         }
@@ -232,13 +239,18 @@ public class ArtistListFragment extends ListFragment {
         @Override
         protected void onPostExecute(ArtistsPager artistsPager) {
             super.onPostExecute(artistsPager);
-            ArrayList<Artist> artists = new ArrayList<Artist>(artistsPager.artists.items);
-            mArtistsAdapter = new ArtistsAdapter(getActivity(), artists);
 
-            setListAdapter(mArtistsAdapter);
+            if (artistsPager != null) {
+                ArrayList<Artist> artists = new ArrayList<>(artistsPager.artists.items);
+                mArtistsAdapter = new ArtistsAdapter(getActivity(), artists);
 
-            if (artistsPager.artists.total == 0) {
-                Toast.makeText(getActivity(), R.string.no_artists_found, Toast.LENGTH_SHORT).show();
+                setListAdapter(mArtistsAdapter);
+
+                if (artistsPager.artists.total == 0) {
+                    Toast.makeText(getActivity(), R.string.no_artists_found, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getActivity(), R.string.error_getting_artists, Toast.LENGTH_SHORT).show();
             }
         }
     }
