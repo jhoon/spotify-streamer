@@ -22,6 +22,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import pe.jota.spotifystreamer.adapters.ArtistsAdapter;
+import retrofit.RetrofitError;
 
 /**
  * A list fragment representing a list of Songs. This fragment
@@ -54,6 +55,9 @@ public class ArtistListFragment extends ListFragment {
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
+    private static final String SEARCH_TERM = "search_term";
+
+    private String mSearchTerm;
     private ArtistsAdapter mArtistsAdapter;
 
     /**
@@ -65,7 +69,7 @@ public class ArtistListFragment extends ListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(Artist artist);
+        void onItemSelected(Artist artist);
     }
 
     /**
@@ -88,6 +92,9 @@ public class ArtistListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null){
+            mSearchTerm = savedInstanceState.getString(SEARCH_TERM);
+        }
     }
 
     private void searchArtist(String searchText) {
@@ -107,8 +114,10 @@ public class ArtistListFragment extends ListFragment {
         mTxtSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                mSearchTerm = mTxtSearch.getText().toString();
+
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    searchArtist(v.getText().toString());
+                    searchArtist(mSearchTerm);
                     return true;
                 }
                 return false;
@@ -121,6 +130,10 @@ public class ArtistListFragment extends ListFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if (mSearchTerm != null && !mSearchTerm.equals("")) {
+            searchArtist(mSearchTerm);
+        }
 
         // Restore the previously serialized activated item position.
         if (savedInstanceState != null
@@ -155,8 +168,10 @@ public class ArtistListFragment extends ListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        // TODO: change this
         Artist selectedArtist = (Artist)getListAdapter().getItem(position);
+
+        setActivatedPosition(position);
+
         Log.d(LOG_TAG, "selected: " + selectedArtist.name);
         mCallbacks.onItemSelected(selectedArtist);
     }
@@ -164,6 +179,11 @@ public class ArtistListFragment extends ListFragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
+        if (mSearchTerm != null && !mSearchTerm.equals("")) {
+            outState.putString(ArtistListFragment.SEARCH_TERM, mSearchTerm);
+        }
+
         if (mActivatedPosition != ListView.INVALID_POSITION) {
             // Serialize and persist the activated item position.
             outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
@@ -203,9 +223,15 @@ public class ArtistListFragment extends ListFragment {
 
             SpotifyApi api = new SpotifyApi();
             SpotifyService spotify = api.getService();
-            ArtistsPager result = spotify.searchArtists(searchText);
+            ArtistsPager result;
+            try {
+                result = spotify.searchArtists(searchText);
+            } catch (RetrofitError e){
+                Log.e(LOG_TAG, e.getMessage(), e);
+                result = null;
+            }
 
-            Log.d(LOG_TAG, result.toString());
+            Log.d(LOG_TAG, result != null ? result.toString() : "No results retrieved");
 
             return result;
         }
@@ -213,13 +239,18 @@ public class ArtistListFragment extends ListFragment {
         @Override
         protected void onPostExecute(ArtistsPager artistsPager) {
             super.onPostExecute(artistsPager);
-            ArrayList<Artist> artists = new ArrayList<Artist>(artistsPager.artists.items);
-            mArtistsAdapter = new ArtistsAdapter(getActivity(), artists);
 
-            setListAdapter(mArtistsAdapter);
+            if (artistsPager != null) {
+                ArrayList<Artist> artists = new ArrayList<>(artistsPager.artists.items);
+                mArtistsAdapter = new ArtistsAdapter(getActivity(), artists);
 
-            if (artistsPager.artists.total == 0) {
-                Toast.makeText(getActivity(), R.string.no_artists_found, Toast.LENGTH_SHORT).show();
+                setListAdapter(mArtistsAdapter);
+
+                if (artistsPager.artists.total == 0) {
+                    Toast.makeText(getActivity(), R.string.no_artists_found, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getActivity(), R.string.error_getting_artists, Toast.LENGTH_SHORT).show();
             }
         }
     }

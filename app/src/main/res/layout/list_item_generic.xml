@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:minHeight="?android:attr/listPreferredItemHeightLarge">
+    android:minHeight="?android:attr/listPreferredItemHeightLarge"
+    android:background="@drawable/touch_selector">
     <ImageView
         android:id="@+id/imgImage"
         android:layout_width="@dimen/image_width"

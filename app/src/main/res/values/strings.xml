@@ -6,4 +6,6 @@
     <string name="enter_artist_name">Please enter a valid artist name</string>
     <string name="no_artists_found">No artists were found</string>
     <string name="no_tracks_found">No tracks were found</string>
+    <string name="error_getting_tracks">There was an error obtaining tracks. Try again.</string>
+    <string name="error_getting_artists">There was an error obtaining artists. Try again.</string>
 </resources>

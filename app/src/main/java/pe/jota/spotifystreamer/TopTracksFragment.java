@@ -19,6 +19,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 import pe.jota.spotifystreamer.adapters.TopTracksAdapter;
+import retrofit.RetrofitError;
 
 /**
  * A fragment representing a single Artist detail screen.
@@ -86,6 +87,7 @@ public class TopTracksFragment extends ListFragment {
         @Override
         protected Tracks doInBackground(String... params) {
             String searchId = params[0];
+            Tracks result;
 
             Log.d(LOG_TAG, "id of Artist: " + searchId);
 
@@ -98,7 +100,12 @@ public class TopTracksFragment extends ListFragment {
             SpotifyApi api = new SpotifyApi();
             SpotifyService spotify = api.getService();
 
-            Tracks result = spotify.getArtistTopTrack(searchId, options);
+            try {
+                result = spotify.getArtistTopTrack(searchId, options);
+            } catch (RetrofitError e){
+                Log.e(LOG_TAG, e.getMessage(), e);
+                result = null;
+            }
 
             return result;
         }
@@ -106,13 +113,18 @@ public class TopTracksFragment extends ListFragment {
         @Override
         protected void onPostExecute(Tracks tracks) {
             super.onPostExecute(tracks);
-            ArrayList<Track> trackList = new ArrayList<Track>(tracks.tracks);
-            mTracksAdapter = new TopTracksAdapter(getActivity(), trackList);
 
-            setListAdapter(mTracksAdapter);
+            if(tracks != null) {
+                ArrayList<Track> trackList = new ArrayList<Track>(tracks.tracks);
+                mTracksAdapter = new TopTracksAdapter(getActivity(), trackList);
 
-            if (tracks.tracks.size() == 0) {
-                Toast.makeText(getActivity(), R.string.no_tracks_found, Toast.LENGTH_SHORT).show();
+                setListAdapter(mTracksAdapter);
+
+                if (tracks.tracks.size() == 0) {
+                    Toast.makeText(getActivity(), R.string.no_tracks_found, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getActivity(), R.string.error_getting_tracks, Toast.LENGTH_SHORT).show();
             }
         }
     }
