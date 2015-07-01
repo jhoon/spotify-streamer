@@ -15,5 +15,5 @@
         android:imeOptions="actionSearch"
         android:inputType="text"/>
 
-    <include android:layout="@android:layout/list_content" />
+    <include layout="@android:layout/list_content" />
 </LinearLayout>

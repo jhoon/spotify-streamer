@@ -38,7 +38,7 @@ public class TopTracksAdapter extends ArrayAdapter<Track> {
             viewHolder.albumImage = (ImageView)convertView.findViewById(R.id.imgImage);
             viewHolder.trackName = (TextView)convertView.findViewById(R.id.tvMainTitle);
             viewHolder.albumName = (TextView)convertView.findViewById(R.id.tvSubTitle);
-            viewHolder.albumImage.setVisibility(View.VISIBLE);
+            viewHolder.albumName.setVisibility(View.VISIBLE);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder)convertView.getTag();

@@ -54,6 +54,9 @@ public class ArtistListFragment extends ListFragment {
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
+    private static final String SEARCH_TERM = "search_term";
+
+    private String mSearchTerm;
     private ArtistsAdapter mArtistsAdapter;
 
     /**
@@ -88,6 +91,9 @@ public class ArtistListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null){
+            mSearchTerm = savedInstanceState.getString(SEARCH_TERM);
+        }
     }
 
     private void searchArtist(String searchText) {
@@ -107,8 +113,10 @@ public class ArtistListFragment extends ListFragment {
         mTxtSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                mSearchTerm = mTxtSearch.getText().toString();
+
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    searchArtist(v.getText().toString());
+                    searchArtist(mSearchTerm);
                     return true;
                 }
                 return false;
@@ -121,6 +129,10 @@ public class ArtistListFragment extends ListFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if (mSearchTerm != null && !mSearchTerm.equals("")) {
+            searchArtist(mSearchTerm);
+        }
 
         // Restore the previously serialized activated item position.
         if (savedInstanceState != null
@@ -155,8 +167,10 @@ public class ArtistListFragment extends ListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        // TODO: change this
         Artist selectedArtist = (Artist)getListAdapter().getItem(position);
+
+        setActivatedPosition(position);
+
         Log.d(LOG_TAG, "selected: " + selectedArtist.name);
         mCallbacks.onItemSelected(selectedArtist);
     }
@@ -164,6 +178,11 @@ public class ArtistListFragment extends ListFragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
+        if (mSearchTerm != null && !mSearchTerm.equals("")) {
+            outState.putString(ArtistListFragment.SEARCH_TERM, mSearchTerm);
+        }
+
         if (mActivatedPosition != ListView.INVALID_POSITION) {
             // Serialize and persist the activated item position.
             outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
