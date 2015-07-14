@@ -1,5 +1,8 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:id="@+id/fragment"
-    android:name="pe.jota.spotifystreamer.PlayerActivityFragment"
-    tools:layout="@layout/fragment_player" android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+<FrameLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:id="@+id/player_container"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".TopTracksFragment"
+tools:layout="@layout/fragment_player" />
