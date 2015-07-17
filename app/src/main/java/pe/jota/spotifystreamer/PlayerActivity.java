@@ -12,7 +12,11 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_player);
 
         if (savedInstanceState == null) {
-            PlayerFragment fragment = PlayerFragment.newInstance();
+            // Create the Fragment for the player and adding it to the
+            // activity using a fragment transaction, along with the track_id
+            String trackId = getIntent().getStringExtra(PlayerFragment.ARG_TRACK_ID);
+
+            PlayerFragment fragment = PlayerFragment.newInstance(trackId);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.player_container, fragment)
                     .commit();

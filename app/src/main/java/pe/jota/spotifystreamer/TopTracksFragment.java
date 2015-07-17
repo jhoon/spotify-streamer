@@ -3,9 +3,7 @@ package pe.jota.spotifystreamer;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -90,8 +88,10 @@ public class TopTracksFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
+        String trackId = ((Track)getListAdapter().getItem(position)).id;
+
         FragmentManager fragmentManager = getFragmentManager();
-        PlayerFragment playerFragment = PlayerFragment.newInstance();
+        PlayerFragment playerFragment = PlayerFragment.newInstance(trackId);
 
         if (getActivity().findViewById(R.id.artist_list) != null){
             // If artist list is present, then that is proof
@@ -103,10 +103,6 @@ public class TopTracksFragment extends ListFragment {
             // the Activity that will show the Now Playing UI
             Intent playerIntent = new Intent(getActivity(), PlayerActivity.class);
             startActivity(playerIntent);
-//            FragmentTransaction transaction = fragmentManager.beginTransaction();
-//            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-//            transaction.add(android.R.id.content, playerFragment)
-//                    .addToBackStack(null).commit();
         }
     }
 
@@ -145,6 +141,11 @@ public class TopTracksFragment extends ListFragment {
 
             if(tracks != null) {
                 ArrayList<Track> trackList = new ArrayList<Track>(tracks.tracks);
+
+                // TODO: Perform the following in an utility class
+                // Updating the list in the application class to use it for playback
+                ((StreamerApp)getActivity().getApplication()).setTrackList(trackList);
+
                 mTracksAdapter = new TopTracksAdapter(getActivity(), trackList);
 
                 setListAdapter(mTracksAdapter);
