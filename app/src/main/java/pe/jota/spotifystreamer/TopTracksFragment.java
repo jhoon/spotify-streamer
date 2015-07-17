@@ -90,18 +90,18 @@ public class TopTracksFragment extends ListFragment {
 
         String trackId = ((Track)getListAdapter().getItem(position)).id;
 
-        FragmentManager fragmentManager = getFragmentManager();
-        PlayerFragment playerFragment = PlayerFragment.newInstance(trackId);
-
         if (getActivity().findViewById(R.id.artist_list) != null){
             // If artist list is present, then that is proof
             // that we are in a tablet layout. For that, we should show
             // the Now Playing UI in dialog mode
+            FragmentManager fragmentManager = getFragmentManager();
+            PlayerFragment playerFragment = PlayerFragment.newInstance(trackId);
             playerFragment.show(fragmentManager, "dialog");
         } else {
             // Because we are in a layout for a phone, let's call
             // the Activity that will show the Now Playing UI
             Intent playerIntent = new Intent(getActivity(), PlayerActivity.class);
+            playerIntent.putExtra(PlayerFragment.ARG_TRACK_ID, trackId);
             startActivity(playerIntent);
         }
     }
