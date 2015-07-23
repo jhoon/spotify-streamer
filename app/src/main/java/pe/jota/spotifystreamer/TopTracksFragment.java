@@ -32,17 +32,27 @@ import retrofit.RetrofitError;
  */
 public class TopTracksFragment extends ListFragment {
     /**
-     * The fragment argument representing the item ID that this fragment
+     * The fragment argument representing the Artist ID that this fragment
      * represents.
      */
     public static final String ARG_ARTIST_ID = "artist_id";
+    /**
+     * The fragment argument representing the Artist Name that this fragment
+     * represents.
+     */
     public static final String ARG_ARTIST_NAME = "artist_name";
 
     /**
      * The Artist id this fragment is presenting.
      */
     private String mArtistId;
+    /**
+     * The Artist name this fragment is presenting.
+     */
     private String mArtistName;
+    /**
+     * The adapter used in this fragment
+     */
     private TopTracksAdapter mTracksAdapter;
 
     /**
@@ -95,17 +105,21 @@ public class TopTracksFragment extends ListFragment {
             // that we are in a tablet layout. For that, we should show
             // the Now Playing UI in dialog mode
             FragmentManager fragmentManager = getFragmentManager();
-            PlayerFragment playerFragment = PlayerFragment.newInstance(trackId);
+            PlayerFragment playerFragment = PlayerFragment.newInstance(trackId, position);
             playerFragment.show(fragmentManager, "dialog");
         } else {
             // Because we are in a layout for a phone, let's call
             // the Activity that will show the Now Playing UI
             Intent playerIntent = new Intent(getActivity(), PlayerActivity.class);
             playerIntent.putExtra(PlayerFragment.ARG_TRACK_ID, trackId);
+            playerIntent.putExtra(PlayerFragment.ARG_TRACK_POSITION, position);
             startActivity(playerIntent);
         }
     }
 
+    /**
+     * AsyncTask inheritor used to get the Top Tracks for the given Artist ID
+     */
     private class FetchTopTracksTask extends AsyncTask<String, Void, Tracks> {
         private final String LOG_TAG = FetchTopTracksTask.class.getSimpleName();
 

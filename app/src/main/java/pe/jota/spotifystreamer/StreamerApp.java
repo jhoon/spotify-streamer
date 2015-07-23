@@ -16,7 +16,11 @@ public class StreamerApp extends Application {
         this.trackList = trackList;
     }
 
-    protected Track getTrackForPlayback(String id){
+    protected ArrayList<Track> getTrackList() {
+        return trackList;
+    }
+
+    protected Track getSelectedTrack(String id){
         Track forPlayback = null;
 
         for (Track track:trackList){
