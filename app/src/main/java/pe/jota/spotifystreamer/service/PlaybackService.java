@@ -1,5 +1,6 @@
 package pe.jota.spotifystreamer.service;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -121,29 +122,35 @@ public class PlaybackService extends Service implements
         mMediaPlayer.prepareAsync();
     }
 
-    public Track getTrackFromList(String id) {
-        Track result = null;
-
-        for (Track track:mTrackList) {
-            if(track.id.equals(id)) {
-                result = track;
-                break;
-            }
-        }
-
-        return result;
-    }
-
     @Override
     public void onDestroy() {
         if (mMediaPlayer != null) {
             mMediaPlayer.release();
+            mMediaPlayer = null;
         }
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        playNext();
+    }
 
+    public void playNext() {
+        mPosition++;
+        if (mPosition < mTrackList.size()) {
+            playSong();
+        } else {
+            mPosition--;
+        }
+    }
+
+    public void playPrevious() {
+        mPosition--;
+        if (mPosition >= 0) {
+            playSong();
+        } else {
+            mPosition++;
+        }
     }
 
     @Override
@@ -154,6 +161,9 @@ public class PlaybackService extends Service implements
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
+
+//        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0,
+//                new Intent(getApplicationContext(), ))
     }
 
     /**

@@ -53,6 +53,11 @@ public class PlayerFragment extends DialogFragment {
      */
     private boolean playbackBound = false;
 
+    private TextView txtSong;
+    private TextView txtArtist;
+    private TextView txtAlbum;
+    private ImageView imgAlbum;
+
     /**
      * Method to obtain a new fragment with the corresponding trackID. Particularly
      * useful when creating a Fragment to be shown in a Dialog.
@@ -117,16 +122,23 @@ public class PlayerFragment extends DialogFragment {
         mPosition =  getArguments().getInt(ARG_TRACK_POSITION);
         mTrack = ((StreamerApp)getActivity().getApplication()).getSelectedTrack(trackId);
 
-        TextView txtSong = (TextView)rootView.findViewById(R.id.txtSong);
+        txtSong = (TextView)rootView.findViewById(R.id.txtSong);
+        txtArtist = (TextView)rootView.findViewById(R.id.txtArtist);
+        txtAlbum = (TextView)rootView.findViewById(R.id.txtAlbum);
+        imgAlbum = (ImageView)rootView.findViewById(R.id.imgAlbum);
+
+        showSongData();
+
+        return rootView;
+    }
+
+    /**
+     * Shows all the data from the current song in the View
+     */
+    private void showSongData() {
         txtSong.setText(mTrack.name);
-
-        TextView txtArtist = (TextView)rootView.findViewById(R.id.txtArtist);
         txtArtist.setText(mTrack.artists.get(0).name);
-
-        TextView txtAlbum = (TextView)rootView.findViewById(R.id.txtAlbum);
         txtAlbum.setText(mTrack.album.name);
-
-        ImageView imgAlbum = (ImageView)rootView.findViewById(R.id.imgAlbum);
         if (mTrack.album.images.size() > 0) {
             String url = mTrack.album.images.get(0).url;
             Picasso.with(getActivity())
@@ -135,10 +147,6 @@ public class PlayerFragment extends DialogFragment {
                     .centerCrop()
                     .into(imgAlbum);
         }
-
-//        preparePlayback();
-
-        return rootView;
     }
 
     @Override
