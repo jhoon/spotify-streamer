@@ -7,9 +7,11 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -53,10 +55,14 @@ public class PlayerFragment extends DialogFragment {
      */
     private boolean playbackBound = false;
 
+    // Controls used in the Fragment UI
     private TextView txtSong;
     private TextView txtArtist;
     private TextView txtAlbum;
     private ImageView imgAlbum;
+    private ImageButton btnPrevious;
+    private ImageButton btnPlayPause;
+    private ImageButton btnNext;
 
     /**
      * Method to obtain a new fragment with the corresponding trackID. Particularly
@@ -99,6 +105,7 @@ public class PlayerFragment extends DialogFragment {
             playbackBound = true;
             playbackService.setTrack(mPosition);
             playbackService.playSong();
+            updatePlayPauseButton();
         }
 
         @Override
@@ -126,8 +133,13 @@ public class PlayerFragment extends DialogFragment {
         txtArtist = (TextView)rootView.findViewById(R.id.txtArtist);
         txtAlbum = (TextView)rootView.findViewById(R.id.txtAlbum);
         imgAlbum = (ImageView)rootView.findViewById(R.id.imgAlbum);
+        btnPrevious = (ImageButton)rootView.findViewById(R.id.btnPrevious);
+        btnPlayPause = (ImageButton)rootView.findViewById(R.id.btnPlayPause);
+        btnNext = (ImageButton)rootView.findViewById(R.id.btnNext);
 
         showSongData();
+        updatePlayPauseButton();
+        setListeners();
 
         return rootView;
     }
@@ -147,6 +159,71 @@ public class PlayerFragment extends DialogFragment {
                     .centerCrop()
                     .into(imgAlbum);
         }
+    }
+
+    /**
+     * Executes the Play / Pause action to the service, calls updatePlayPauseButton
+     * to update the UI
+     */
+    private void playPause() {
+        if (playbackService != null && playbackBound) {
+            playbackService.playPause();
+            updatePlayPauseButton();
+        } else {
+            Log.e(LOG_TAG, "PlaybackService is not bound yet");
+        }
+    }
+
+    /**
+     * In charge of updating the UI button for Play/Pause
+     */
+    private void updatePlayPauseButton() {
+        if (playbackService != null && playbackBound) {
+            if (playbackService.isPlaying()) {
+                btnPlayPause.setImageResource(android.R.drawable.ic_media_pause);
+            } else {
+                btnPlayPause.setImageResource(android.R.drawable.ic_media_play);
+            }
+        } else {
+            Log.e(LOG_TAG, "PlaybackService is not bound yet");
+        }
+    }
+
+    /**
+     * Setting the listeners for the buttons in the UI
+     */
+    private void setListeners() {
+        // Setting the listeners for the buttons
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (playbackService != null && playbackBound) {
+                    mTrack = playbackService.playNext();
+                    showSongData();
+                } else {
+                    Log.e(LOG_TAG, "PlaybackService is not bound yet");
+                }
+            }
+        });
+
+        btnPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (playbackService != null && playbackBound) {
+                    mTrack = playbackService.playPrevious();
+                    showSongData();
+                } else {
+                    Log.e(LOG_TAG, "PlaybackService is not bound yet");
+                }
+            }
+        });
+
+        btnPlayPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playPause();
+            }
+        });
     }
 
     @Override

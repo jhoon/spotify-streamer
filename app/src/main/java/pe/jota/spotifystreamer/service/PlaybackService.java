@@ -1,6 +1,5 @@
 package pe.jota.spotifystreamer.service;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -20,16 +19,6 @@ public class PlaybackService extends Service implements
         MediaPlayer.OnCompletionListener {
     private static final String LOG_TAG = PlaybackService.class.getSimpleName();
 
-    // Actions defined for this Service
-    private static final String ACTION_PLAY = "pe.jota.spotifystreamer.service.action.PLAY";
-    private static final String ACTION_STOP = "pe.jota.spotifystreamer.service.action.STOP";
-    private static final String ACTION_PAUSE = "pe.jota.spotifystreamer.service.action.PAUSE";
-    private static final String ACTION_NEXT = "pe.jota.spotifystreamer.service.action.NEXT";
-    private static final String ACTION_PREVIOUS = "pe.jota.spotifystreamer.service.action.PREVIOUS";
-
-    // Parameters needed for this service intents:
-    private static final String EXTRA_TRACK_ID = "pe.jota.spotifystreamer.service.extra.TRACK_ID";
-
     // MediaPlayer that will be used through all operations
     private MediaPlayer mMediaPlayer = null;
     private ArrayList<Track> mTrackList = null;
@@ -47,6 +36,9 @@ public class PlaybackService extends Service implements
         initMusicPlayer();
     }
 
+    /**
+     * Initializes the Music Player
+     */
     public void initMusicPlayer() {
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mMediaPlayer.setOnPreparedListener(this);
@@ -54,10 +46,19 @@ public class PlaybackService extends Service implements
         mMediaPlayer.setOnErrorListener(this);
     }
 
+    /**
+     * Updates the list of tracks to be used in the player
+     * @param trackList the list of tracks that will replace the current one in the player
+     */
     public void setTrackList(ArrayList<Track> trackList) {
         mTrackList = trackList;
     }
 
+    /**
+     * Sets the current track to be played
+     * @param trackIndex the zero-based index of the song to be played. Plays nice
+     *                   with the position from a ListView
+     */
     public void setTrack(int trackIndex) {
         mPosition = trackIndex;
     }
@@ -91,26 +92,9 @@ public class PlaybackService extends Service implements
         return false;
     }
 
-    private void preparePlayback() {
-        try {
-            if (mTrackList == null) {
-                throw new IOException("TrackList not present");
-            }
-            if (mTrackList.get(mPosition) == null) {
-                throw new IOException("Track not found");
-            }
-
-            if (mMediaPlayer == null) {
-                mMediaPlayer = new MediaPlayer();
-            }
-
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.setDataSource(mTrackList.get(mPosition).preview_url);
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error starting Playback", e);
-        }
-    }
-
+    /**
+     * Starts playback of the song, given that a Position and a Track List have been registered
+     */
     public void playSong() {
         mMediaPlayer.reset();
         Track songPlay = mTrackList.get(mPosition);
@@ -132,25 +116,60 @@ public class PlaybackService extends Service implements
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        playNext();
+        if ( mTrackList.size()-1 > mPosition) {
+            playNext();
+        } else {
+            mp.stop();
+        }
     }
 
-    public void playNext() {
+    /**
+     * Starts playback of the next song in the Track list. If the track is the last one,
+     * nothing will happen.
+     * @return the track that will start playing
+     */
+    public Track playNext() {
         mPosition++;
         if (mPosition < mTrackList.size()) {
             playSong();
         } else {
             mPosition--;
         }
+        return mTrackList.get(mPosition);
     }
 
-    public void playPrevious() {
+    /**
+     * Starts playback of the previous song to the current one in the Track List. If the track
+     * is the first one, nothing will happen.
+     * @return the track that will start playing
+     */
+    public Track playPrevious() {
         mPosition--;
         if (mPosition >= 0) {
             playSong();
         } else {
             mPosition++;
         }
+        return mTrackList.get(mPosition);
+    }
+
+    /**
+     * Plays or pauses the song, relying on the current state of the MediaPlayer.
+     */
+    public void playPause() {
+        if (mMediaPlayer.isPlaying()) {
+            mMediaPlayer.pause();
+        } else {
+            mMediaPlayer.start();
+        }
+    }
+
+    /**
+     * Exposes the state of the isPlaying() method of the MediaPlayer
+     * @return the isPlaying() state of the MediaPlayer instance in the service
+     */
+    public boolean isPlaying() {
+        return mMediaPlayer.isPlaying();
     }
 
     @Override
@@ -161,9 +180,6 @@ public class PlaybackService extends Service implements
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
-
-//        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0,
-//                new Intent(getApplicationContext(), ))
     }
 
     /**

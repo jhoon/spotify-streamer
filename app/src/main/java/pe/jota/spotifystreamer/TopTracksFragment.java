@@ -156,7 +156,6 @@ public class TopTracksFragment extends ListFragment {
             if(tracks != null) {
                 ArrayList<Track> trackList = new ArrayList<Track>(tracks.tracks);
 
-                // TODO: Perform the following in an utility class
                 // Updating the list in the application class to use it for playback
                 ((StreamerApp)getActivity().getApplication()).setTrackList(trackList);
 
