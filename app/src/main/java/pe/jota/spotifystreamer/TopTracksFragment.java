@@ -1,13 +1,16 @@
 package pe.jota.spotifystreamer;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -29,17 +32,27 @@ import retrofit.RetrofitError;
  */
 public class TopTracksFragment extends ListFragment {
     /**
-     * The fragment argument representing the item ID that this fragment
+     * The fragment argument representing the Artist ID that this fragment
      * represents.
      */
     public static final String ARG_ARTIST_ID = "artist_id";
+    /**
+     * The fragment argument representing the Artist Name that this fragment
+     * represents.
+     */
     public static final String ARG_ARTIST_NAME = "artist_name";
 
     /**
      * The Artist id this fragment is presenting.
      */
     private String mArtistId;
+    /**
+     * The Artist name this fragment is presenting.
+     */
     private String mArtistName;
+    /**
+     * The adapter used in this fragment
+     */
     private TopTracksAdapter mTracksAdapter;
 
     /**
@@ -81,6 +94,32 @@ public class TopTracksFragment extends ListFragment {
         return rootView;
     }
 
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+
+        String trackId = ((Track)getListAdapter().getItem(position)).id;
+
+        if (getActivity().findViewById(R.id.artist_list) != null){
+            // If artist list is present, then that is proof
+            // that we are in a tablet layout. For that, we should show
+            // the Now Playing UI in dialog mode
+            FragmentManager fragmentManager = getFragmentManager();
+            PlayerFragment playerFragment = PlayerFragment.newInstance(trackId, position);
+            playerFragment.show(fragmentManager, "dialog");
+        } else {
+            // Because we are in a layout for a phone, let's call
+            // the Activity that will show the Now Playing UI
+            Intent playerIntent = new Intent(getActivity(), PlayerActivity.class);
+            playerIntent.putExtra(PlayerFragment.ARG_TRACK_ID, trackId);
+            playerIntent.putExtra(PlayerFragment.ARG_TRACK_POSITION, position);
+            startActivity(playerIntent);
+        }
+    }
+
+    /**
+     * AsyncTask inheritor used to get the Top Tracks for the given Artist ID
+     */
     private class FetchTopTracksTask extends AsyncTask<String, Void, Tracks> {
         private final String LOG_TAG = FetchTopTracksTask.class.getSimpleName();
 
@@ -116,6 +155,10 @@ public class TopTracksFragment extends ListFragment {
 
             if(tracks != null) {
                 ArrayList<Track> trackList = new ArrayList<Track>(tracks.tracks);
+
+                // Updating the list in the application class to use it for playback
+                ((StreamerApp)getActivity().getApplication()).setTrackList(trackList);
+
                 mTracksAdapter = new TopTracksAdapter(getActivity(), trackList);
 
                 setListAdapter(mTracksAdapter);

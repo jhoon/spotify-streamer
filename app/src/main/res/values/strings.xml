@@ -8,4 +8,5 @@
     <string name="no_tracks_found">No tracks were found</string>
     <string name="error_getting_tracks">There was an error obtaining tracks. Try again.</string>
     <string name="error_getting_artists">There was an error obtaining artists. Try again.</string>
+    <string name="title_now_playing">Now Playing</string>
 </resources>

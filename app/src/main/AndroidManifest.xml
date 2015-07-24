@@ -3,9 +3,10 @@
     package="pe.jota.spotifystreamer" >
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name=".StreamerApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -27,6 +28,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ArtistListActivity" />
         </activity>
+        <activity
+            android:name=".PlayerActivity"
+            android:label="@string/title_now_playing" >
+        </activity>
+
+        <service
+            android:name=".service.PlaybackService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>
