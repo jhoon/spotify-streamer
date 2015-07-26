@@ -131,8 +131,11 @@ public class ArtistListFragment extends ListFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (mSearchTerm != null && !mSearchTerm.equals("")) {
-            searchArtist(mSearchTerm);
+        if (savedInstanceState != null &&
+                ((StreamerApp)getActivity().getApplication()).getArtistList() != null) {
+            mArtistsAdapter = new ArtistsAdapter(getActivity(),
+                    ((StreamerApp)getActivity().getApplication()).getArtistList());
+            setListAdapter(mArtistsAdapter);
         }
 
         // Restore the previously serialized activated item position.
@@ -243,6 +246,7 @@ public class ArtistListFragment extends ListFragment {
             if (artistsPager != null) {
                 ArrayList<Artist> artists = new ArrayList<>(artistsPager.artists.items);
                 mArtistsAdapter = new ArtistsAdapter(getActivity(), artists);
+                ((StreamerApp)getActivity().getApplication()).setArtistList(artists);
 
                 setListAdapter(mArtistsAdapter);
 

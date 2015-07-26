@@ -4,6 +4,7 @@ import android.app.Application;
 
 import java.util.ArrayList;
 
+import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Track;
 
 /**
@@ -11,13 +12,22 @@ import kaaes.spotify.webapi.android.models.Track;
  */
 public class StreamerApp extends Application {
     private ArrayList<Track> trackList = null;
+    private ArrayList<Artist> artistList = null;
 
     protected void setTrackList(ArrayList<Track> trackList) {
         this.trackList = trackList;
     }
 
+    protected void setArtistList(ArrayList<Artist> artistList) {
+        this.artistList = artistList;
+    }
+
     protected ArrayList<Track> getTrackList() {
         return trackList;
+    }
+
+    protected ArrayList<Artist> getArtistList() {
+        return artistList;
     }
 
     protected Track getSelectedTrack(String id){
