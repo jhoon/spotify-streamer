@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -87,9 +88,20 @@ public class TopTracksFragment extends ListFragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setSubtitle(mArtistName);
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
 
-        new FetchTopTracksTask().execute(mArtistId);
+        if (actionBar != null) {
+            actionBar.setSubtitle(mArtistName);
+        }
+
+        if (savedInstanceState != null &&
+                ((StreamerApp)getActivity().getApplication()).getTrackList() != null ) {
+            mTracksAdapter = new TopTracksAdapter(getActivity(),
+                    ((StreamerApp)getActivity().getApplication()).getTrackList());
+            setListAdapter(mTracksAdapter);
+        } else {
+            new FetchTopTracksTask().execute(mArtistId);
+        }
 
         return rootView;
     }
@@ -131,7 +143,7 @@ public class TopTracksFragment extends ListFragment {
             Log.d(LOG_TAG, "id of Artist: " + searchId);
 
             // Options for searching the top 10 tracks
-            final Map<String, Object> options = new HashMap<String, Object>();
+            final Map<String, Object> options = new HashMap<>();
             options.put(SpotifyService.OFFSET, 0);
             options.put(SpotifyService.LIMIT, 10);
             options.put(SpotifyService.COUNTRY, "US");
@@ -154,7 +166,7 @@ public class TopTracksFragment extends ListFragment {
             super.onPostExecute(tracks);
 
             if(tracks != null) {
-                ArrayList<Track> trackList = new ArrayList<Track>(tracks.tracks);
+                ArrayList<Track> trackList = new ArrayList<>(tracks.tracks);
 
                 // Updating the list in the application class to use it for playback
                 ((StreamerApp)getActivity().getApplication()).setTrackList(trackList);
