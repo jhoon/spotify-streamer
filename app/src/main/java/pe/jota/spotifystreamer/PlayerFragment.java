@@ -1,5 +1,6 @@
 package pe.jota.spotifystreamer;
 
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -103,8 +104,13 @@ public class PlayerFragment extends DialogFragment {
             // setting the list of songs in the service
             playbackService.setTrackList(trackList);
             playbackBound = true;
-            playbackService.setTrack(mPosition);
-            playbackService.playSong();
+            if (!playbackService.isPlaying()) {
+                playbackService.setTrack(mPosition);
+                playbackService.playSong();
+            } else {
+                mTrack = playbackService.currentSong();
+                showSongData();
+            }
             updatePlayPauseButton();
         }
 

@@ -106,6 +106,14 @@ public class PlaybackService extends Service implements
         mMediaPlayer.prepareAsync();
     }
 
+    /**
+     * Method to obtain the track being played
+     * @return the track that is currently being played
+     */
+    public Track currentSong() {
+        return mTrackList.get(mPosition);
+    }
+
     @Override
     public void onDestroy() {
         if (mMediaPlayer != null) {
