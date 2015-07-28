@@ -23,6 +23,7 @@ public class PlaybackService extends Service implements
     private MediaPlayer mMediaPlayer = null;
     private ArrayList<Track> mTrackList = null;
     private int mPosition;
+    PlaybackCallbacks playerFragment;
 
     private final IBinder playbackBind = new PlaybackBinder();
 
@@ -180,6 +181,16 @@ public class PlaybackService extends Service implements
         return mMediaPlayer.isPlaying();
     }
 
+    /**
+     * Sets the current fragment in order to create a communication between this service
+     * and the fragment that calls it
+     * @param playerFragment the fragment (that implements PlaybackCallbacks) which is connecting
+     *                       to this service.
+     */
+    public void registerClient(PlaybackCallbacks playerFragment) {
+        this.playerFragment = playerFragment;
+    }
+
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         return false;
@@ -188,6 +199,9 @@ public class PlaybackService extends Service implements
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
+        if (playerFragment != null) {
+            playerFragment.startPlaying(mp.getDuration(), mp.getCurrentPosition());
+        }
     }
 
     /**
@@ -197,5 +211,9 @@ public class PlaybackService extends Service implements
         public PlaybackService getService() {
             return PlaybackService.this;
         }
+    }
+
+    public interface PlaybackCallbacks {
+        void startPlaying(int trackDuration, int start);
     }
 }
