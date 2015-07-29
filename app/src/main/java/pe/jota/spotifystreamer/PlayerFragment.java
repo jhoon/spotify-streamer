@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -13,11 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import kaaes.spotify.webapi.android.models.Track;
 import pe.jota.spotifystreamer.service.PlaybackService;
@@ -26,9 +29,13 @@ import pe.jota.spotifystreamer.service.PlaybackService.PlaybackBinder;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class PlayerFragment extends DialogFragment {
+public class PlayerFragment extends DialogFragment implements PlaybackService.PlaybackCallbacks {
     private static final String LOG_TAG = PlayerFragment.class.getSimpleName();
 
+    /**
+     * The current progress, useful when restoring the fragment from rotation
+     */
+    static final String CURRENT_PROGRESS = "current_progress";
     /**
      * The Track id this fragment is presenting.
      */
@@ -55,14 +62,37 @@ public class PlayerFragment extends DialogFragment {
      */
     private boolean playbackBound = false;
 
+    /**
+     * Flag to indicate whether playback should continue or a new song should be set
+     */
+    private boolean continuePlayback = false;
+
+    /**
+     * Handler to update the seekBar
+     */
+    private Handler mHandler = new Handler();
+
     // Controls used in the Fragment UI
     private TextView txtSong;
     private TextView txtArtist;
     private TextView txtAlbum;
+    private TextView txtStartTime;
+    private TextView txtEndTime;
     private ImageView imgAlbum;
     private ImageButton btnPrevious;
     private ImageButton btnPlayPause;
     private ImageButton btnNext;
+    private SeekBar seekSong;
+
+    // Runnable to perform progress in the seekBar
+    Runnable mProgress = new Runnable() {
+        @Override
+        public void run() {
+            mHandler.postDelayed(this, 1000);
+            seekSong.setProgress(seekSong.getProgress() + 1000);
+            txtStartTime.setText(formatProgress(seekSong.getProgress()));
+        }
+    };
 
     /**
      * Method to obtain a new fragment with the corresponding trackID. Particularly
@@ -102,9 +132,17 @@ public class PlayerFragment extends DialogFragment {
             playbackService = binder.getService();
             // setting the list of songs in the service
             playbackService.setTrackList(trackList);
+            // setting this fragment as the client
+            playbackService.registerClient(PlayerFragment.this);
             playbackBound = true;
-            playbackService.setTrack(mPosition);
-            playbackService.playSong();
+
+            if (continuePlayback) {
+                mTrack = playbackService.currentSong();
+                showSongData();
+            } else {
+                playbackService.setTrack(mPosition);
+                playbackService.playSong();
+            }
             updatePlayPauseButton();
         }
 
@@ -117,13 +155,14 @@ public class PlayerFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (null == playbackIntent) {
+        if(null == playbackIntent) {
             playbackIntent = new Intent(getActivity(), PlaybackService.class);
             getActivity().bindService(playbackIntent, playbackConnection, Context.BIND_AUTO_CREATE);
             getActivity().startService(playbackIntent);
         }
 
         View rootView = inflater.inflate(R.layout.fragment_player, container, false);
+
         String trackId = getArguments().getString(ARG_TRACK_ID);
 
         mPosition =  getArguments().getInt(ARG_TRACK_POSITION);
@@ -132,10 +171,17 @@ public class PlayerFragment extends DialogFragment {
         txtSong = (TextView)rootView.findViewById(R.id.txtSong);
         txtArtist = (TextView)rootView.findViewById(R.id.txtArtist);
         txtAlbum = (TextView)rootView.findViewById(R.id.txtAlbum);
+        txtStartTime = (TextView)rootView.findViewById(R.id.txtStartTime);
+        txtEndTime = (TextView)rootView.findViewById(R.id.txtEndTime);
         imgAlbum = (ImageView)rootView.findViewById(R.id.imgAlbum);
         btnPrevious = (ImageButton)rootView.findViewById(R.id.btnPrevious);
         btnPlayPause = (ImageButton)rootView.findViewById(R.id.btnPlayPause);
         btnNext = (ImageButton)rootView.findViewById(R.id.btnNext);
+        seekSong = (SeekBar)rootView.findViewById(R.id.seekSong);
+
+        if (savedInstanceState != null) {
+            continuePlayback = true;
+        }
 
         showSongData();
         updatePlayPauseButton();
@@ -159,6 +205,12 @@ public class PlayerFragment extends DialogFragment {
                     .centerCrop()
                     .into(imgAlbum);
         }
+        if (playbackService != null) {
+            seekSong.setMax(playbackService.getDuration());
+            seekSong.setProgress(playbackService.getCurrentPosition());
+            txtEndTime.setText(formatProgress(playbackService.getDuration()));
+            txtStartTime.setText(formatProgress(playbackService.getCurrentPosition()));
+        }
     }
 
     /**
@@ -181,8 +233,11 @@ public class PlayerFragment extends DialogFragment {
         if (playbackService != null && playbackBound) {
             if (playbackService.isPlaying()) {
                 btnPlayPause.setImageResource(android.R.drawable.ic_media_pause);
+                mHandler.removeCallbacks(mProgress);
+                mProgress.run();
             } else {
                 btnPlayPause.setImageResource(android.R.drawable.ic_media_play);
+                mHandler.removeCallbacks(mProgress);
             }
         } else {
             Log.e(LOG_TAG, "PlaybackService is not bound yet");
@@ -198,8 +253,8 @@ public class PlayerFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 if (playbackService != null && playbackBound) {
+                    mHandler.removeCallbacks(mProgress);
                     mTrack = playbackService.playNext();
-                    showSongData();
                 } else {
                     Log.e(LOG_TAG, "PlaybackService is not bound yet");
                 }
@@ -210,8 +265,8 @@ public class PlayerFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 if (playbackService != null && playbackBound) {
+                    mHandler.removeCallbacks(mProgress);
                     mTrack = playbackService.playPrevious();
-                    showSongData();
                 } else {
                     Log.e(LOG_TAG, "PlaybackService is not bound yet");
                 }
@@ -224,16 +279,38 @@ public class PlayerFragment extends DialogFragment {
                 playPause();
             }
         });
+
+        seekSong.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser && playbackBound && playbackService != null) {
+                    mHandler.removeCallbacks(mProgress);
+                    playbackService.seekTo(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        if (playbackBound) {
-            playbackService.setTrack(mPosition);
-            playbackService.playSong();
-        }
+    /**
+     * Returns a String that can be shown as the song progress or the Song Duration
+     * @param progress the progress as received from the seekBar
+     * @return a String that shows the progress in the format 0:00
+     */
+    private String formatProgress(int progress) {
+        return  String.format("%d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(progress),
+                TimeUnit.MILLISECONDS.toSeconds(progress) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(progress)));
     }
 
     @Override
@@ -244,7 +321,26 @@ public class PlayerFragment extends DialogFragment {
     @Override
     public void onDestroy() {
         getActivity().stopService(playbackIntent);
+//        getActivity().unbindService(playbackConnection);
         playbackService = null;
         super.onDestroy();
+    }
+
+    @Override
+    public void startPlaying(int trackDuration, int start) {
+        seekSong.setMax(trackDuration);
+        txtEndTime.setText(formatProgress(trackDuration));
+        seekSong.setProgress(start);
+        mTrack = playbackService.currentSong();
+        showSongData();
+        updatePlayPauseButton();
+    }
+
+    @Override
+    public void setProgress(int progress) {
+        Log.d(LOG_TAG, "progress: " + progress + " seekBarMax: " + seekSong.getMax());
+        seekSong.setProgress(progress);
+        txtStartTime.setText(formatProgress(progress));
+        updatePlayPauseButton();
     }
 }

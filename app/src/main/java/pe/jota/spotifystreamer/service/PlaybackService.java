@@ -16,13 +16,15 @@ import kaaes.spotify.webapi.android.models.Track;
 public class PlaybackService extends Service implements
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
-        MediaPlayer.OnCompletionListener {
+        MediaPlayer.OnCompletionListener,
+        MediaPlayer.OnSeekCompleteListener {
     private static final String LOG_TAG = PlaybackService.class.getSimpleName();
 
     // MediaPlayer that will be used through all operations
     private MediaPlayer mMediaPlayer = null;
     private ArrayList<Track> mTrackList = null;
     private int mPosition;
+    PlaybackCallbacks playerFragment;
 
     private final IBinder playbackBind = new PlaybackBinder();
 
@@ -44,6 +46,7 @@ public class PlaybackService extends Service implements
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
         mMediaPlayer.setOnErrorListener(this);
+        mMediaPlayer.setOnSeekCompleteListener(this);
     }
 
     /**
@@ -104,6 +107,14 @@ public class PlaybackService extends Service implements
             Log.e(LOG_TAG, "Error setting the data source", e);
         }
         mMediaPlayer.prepareAsync();
+    }
+
+    /**
+     * Method to obtain the track being played
+     * @return the track that is currently being played
+     */
+    public Track currentSong() {
+        return mTrackList.get(mPosition);
     }
 
     @Override
@@ -172,6 +183,40 @@ public class PlaybackService extends Service implements
         return mMediaPlayer.isPlaying();
     }
 
+    /**
+     * Sets the current fragment in order to create a communication between this service
+     * and the fragment that calls it
+     * @param playerFragment the fragment (that implements PlaybackCallbacks) which is connecting
+     *                       to this service.
+     */
+    public void registerClient(PlaybackCallbacks playerFragment) {
+        this.playerFragment = playerFragment;
+    }
+
+    /**
+     * Exposes the seekTo() method of the MediaPlayer in order to be called from outside of the service
+     * @param progress the progress where the media player should go to
+     */
+    public void seekTo(int progress) {
+        mMediaPlayer.seekTo(progress);
+    }
+
+    /**
+     * Exposes the getCurrentPositionMethod in order to be called from outside the service
+     * @return the currentPosition of the track being played
+     */
+    public int getCurrentPosition() {
+        return mMediaPlayer.getCurrentPosition();
+    }
+
+    /**
+     * Exposes the getDuration in order to be called from outside the service
+     * @return the duration of the track being played
+     */
+    public int getDuration() {
+        return mMediaPlayer.getDuration();
+    }
+
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         return false;
@@ -180,6 +225,16 @@ public class PlaybackService extends Service implements
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
+        if (playerFragment != null) {
+            playerFragment.startPlaying(mp.getDuration(), mp.getCurrentPosition());
+        }
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer mp) {
+        if (playerFragment != null) {
+            playerFragment.setProgress(mp.getCurrentPosition());
+        }
     }
 
     /**
@@ -189,5 +244,10 @@ public class PlaybackService extends Service implements
         public PlaybackService getService() {
             return PlaybackService.this;
         }
+    }
+
+    public interface PlaybackCallbacks {
+        void startPlaying(int trackDuration, int start);
+        void setProgress(int progress);
     }
 }
