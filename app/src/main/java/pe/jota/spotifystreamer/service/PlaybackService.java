@@ -16,7 +16,8 @@ import kaaes.spotify.webapi.android.models.Track;
 public class PlaybackService extends Service implements
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
-        MediaPlayer.OnCompletionListener {
+        MediaPlayer.OnCompletionListener,
+        MediaPlayer.OnSeekCompleteListener {
     private static final String LOG_TAG = PlaybackService.class.getSimpleName();
 
     // MediaPlayer that will be used through all operations
@@ -45,6 +46,7 @@ public class PlaybackService extends Service implements
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
         mMediaPlayer.setOnErrorListener(this);
+        mMediaPlayer.setOnSeekCompleteListener(this);
     }
 
     /**
@@ -191,6 +193,30 @@ public class PlaybackService extends Service implements
         this.playerFragment = playerFragment;
     }
 
+    /**
+     * Exposes the seekTo() method of the MediaPlayer in order to be called from outside of the service
+     * @param progress the progress where the media player should go to
+     */
+    public void seekTo(int progress) {
+        mMediaPlayer.seekTo(progress);
+    }
+
+    /**
+     * Exposes the getCurrentPositionMethod in order to be called from outside the service
+     * @return the currentPosition of the track being played
+     */
+    public int getCurrentPosition() {
+        return mMediaPlayer.getCurrentPosition();
+    }
+
+    /**
+     * Exposes the getDuration in order to be called from outside the service
+     * @return the duration of the track being played
+     */
+    public int getDuration() {
+        return mMediaPlayer.getDuration();
+    }
+
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         return false;
@@ -201,6 +227,13 @@ public class PlaybackService extends Service implements
         mp.start();
         if (playerFragment != null) {
             playerFragment.startPlaying(mp.getDuration(), mp.getCurrentPosition());
+        }
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer mp) {
+        if (playerFragment != null) {
+            playerFragment.setProgress(mp.getCurrentPosition());
         }
     }
 
@@ -215,5 +248,6 @@ public class PlaybackService extends Service implements
 
     public interface PlaybackCallbacks {
         void startPlaying(int trackDuration, int start);
+        void setProgress(int progress);
     }
 }
